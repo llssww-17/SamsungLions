@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<title>삼성라이온즈파크 구장 위치</title>
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script>
+	var map;
+	
+	$(function() {  
+		var latlngDC = new google.maps.LatLng(35.8411290, 128.68123648);
+		var mapOptions = { zoom: 12, center: latlngDC  };
+
+		map = new google.maps.Map( document.getElementById('map-canvas'), mapOptions );
+				
+		var marker = new google.maps.Marker( { 
+			position: latlngDC,     
+			map: map,      
+			title: '삼성라이온즈파크',
+			icon : 'img/lions.PNG',
+			animation: google.maps.Animation.DROP 
+		});
+		
+		var contentString = "<b>대구광역시 수성구 야구전설로 1</b>";
+		var infowindow = new google.maps.InfoWindow( { content: contentString } );
+		
+		google.maps.event.addListener( marker, 'click', function() { infowindow.open( map, marker ); });
+	});
+
+	</script>
+	<style>
+	#map-canvas
+	{
+		width : 500px;
+		height: 500px;
+		max-width: 100%; display: block; margin: auto;
+	}
+	</style>
+</head>
+<body>
+	<div data-role="page">
+		<div data-role="header">
+		  <h1 align="center" color="blue">삼성라이온즈파크 구장 위치</h1>
+		  <div data-role="navbar">
+			<ul>
+			  <li><a href="main.html" data-icon="home">홈</a></li>
+			</ul>
+		  </div>
+		</div>
+<body>
+	<div id='map-canvas' ></div>
+	<div data-role="footer">
+		<h2>2022 LSW</h2>
+	</div>
+</body>
+</html>

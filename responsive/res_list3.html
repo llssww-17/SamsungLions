@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="user-scalable=no, width=device-width">
+  <link href="../css/common.css" rel="stylesheet" type="text/css">
+  <link href="../css/desktop.css" rel="stylesheet" type="text/css" media="screen and (min-width: 721px)">
+  <link href="../css/mobile1.css" rel="stylesheet" type="text/css" media="screen and (max-width: 720px)">
+  <title>삼성라이온즈 선수 명단</title>
+  <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+  <style>
+    body {
+      color: #222;
+      font: 14px Arial;
+    }
+
+    body a {
+      color: #3D5C9D;
+      text-decoration: none;
+    }
+  </style>
+  <script>
+    var html5rocks = {};
+    html5rocks.webdb = {};
+    html5rocks.webdb.db = null;
+
+    html5rocks.webdb.open = function () {
+      var dbSize = 5 * 1024 * 1024;
+      html5rocks.webdb.db = openDatabase("list", "1.0", "player list", dbSize);
+    }
+
+    html5rocks.webdb.createTable = function () {
+      var db = html5rocks.webdb.db;
+      db.transaction(function (tx) {
+        tx.executeSql("CREATE TABLE IF NOT EXISTS list(ID INTEGER PRIMARY KEY ASC, mdate TEXT, mname TEXT, mgame TEXT, mrecord TEXT)", []);
+      });
+    }
+
+    html5rocks.webdb.add = function (mdate, mname, mgame, mrecord) {
+      var db = html5rocks.webdb.db;
+      db.transaction(function (tx) {
+        var addedOn = new Date();
+        tx.executeSql("INSERT INTO list(mdate, mname, mgame, mrecord) VALUES (?,?,?,?)",
+          [mdate, mname, mgame, mrecord],
+          html5rocks.webdb.onSuccess,
+          html5rocks.webdb.onError);
+      });
+
+    }
+
+    html5rocks.webdb.onError = function (tx, e) {
+      alert("에러 발생: " + e.message);
+    }
+
+    html5rocks.webdb.onSuccess = function (tx, r) {
+      html5rocks.webdb.getAllWebsiteItems(loadItems);
+    }
+
+    html5rocks.webdb.getAllWebsiteItems = function (renderFunc) {
+      var db = html5rocks.webdb.db;
+      db.transaction(function (tx) {
+        tx.executeSql("SELECT * FROM list", [], renderFunc,
+          html5rocks.webdb.onError);
+      });
+    }
+
+    html5rocks.webdb.delete = function (id) {
+      var db = html5rocks.webdb.db;
+      db.transaction(function (tx) {
+        tx.executeSql("DELETE FROM list WHERE ID=?", [id],
+          html5rocks.webdb.onSuccess,
+          html5rocks.webdb.onError);
+      });
+    }
+
+    function loadItems(tx, rs) {
+      var rowOutput = "";
+      var todoItems = document.getElementById("MyRecordItems");
+      for (var i = 0; i < rs.rows.length; i++) {
+        rowOutput += renderWebSite(rs.rows.item(i));
+      }
+      todoItems.innerHTML = rowOutput;
+    }
+
+    function renderWebSite(row) {
+      return "<li>" + row.mdate + "&nbsp;&nbsp;" + row.mname + "&nbsp;&nbsp;" + row.mgame + "&nbsp;&nbsp;" + row.mrecord + "[<a href='javascript:void(0);'  onclick='deleteRow(" + row.ID + ");'>삭제</a>]";
+    }
+
+    function deleteRow(rowId) {
+      html5rocks.webdb.delete(rowId);
+    }
+
+    function init() {
+      html5rocks.webdb.open();
+      html5rocks.webdb.createTable();
+      html5rocks.webdb.getAllWebsiteItems(loadItems);
+    }
+
+    function add() {
+      var mdate = document.getElementById("mdate");
+      var mname = document.getElementById("mname");
+      var mgame = document.getElementById("mgame");
+      var mrecord = document.getElementById("mrecord");
+      html5rocks.webdb.add(mdate.value, mname.value, mgame.value, mrecord.value);
+      mdate.value = "";
+      mname.value = "";
+      mgame.value = "";
+      mrecord.value = "";
+    }
+
+    function deleteALL() {
+      html5rocks.webdb.deleteALL();
+      init();
+    }
+    html5rocks.webdb.deleteALL = function () {
+      var db = html5rocks.webdb.db;
+      db.transaction(function (tx) {
+        tx.executeSql("drop table list", [],
+          html5rocks.webdb.onSuccess,
+          html5rocks.webdb.onError);
+      });
+    }
+  </script>
+</head>
+
+<body onload="init();">
+  <div id="container">
+    <div id="head">
+      <h1>삼성라이온즈</h1>
+    </div><br />
+    <div id="content">
+      <h2 class="blue_text">선수 명단</h2>
+      <form type="post" onsubmit="add(); return false;">
+        번호:<input type="text" id="mdate" name="mdate" placeholder="입력" />
+        이름:<input type="text" id="mname" name="mname" placeholder="입력" />
+        포지션:<select id="mgame" name="mgame">
+          <option value="투수">투수</option>
+          <option value="포수">포수</option>
+          <option value="내야수">내야수</option>
+          <option value="외야수">외야수</option>
+        </select>
+        투타 형태:<input type="text" id="mrecord" name="mrecord" placeholder="입력" />
+        <input type="submit" value="선수 추가" />
+      </form>
+      <ul id="MyRecordItems">
+      </ul>
+      <form type="post" onsubmit="deleteALL(); return false;">
+        <input type="submit" value="명단 모두 초기화" />
+      </form>
+    </div>
+    <footer class="foot">
+      <p>정상적으로 기능이 수행되지 않으면 새로고침을 해주세요.</p>
+    </footer>
+  </div>
+</body>
+
+</html>
